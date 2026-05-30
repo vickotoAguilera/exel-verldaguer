@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'export',
+  output: 'standalone',
   // Las imágenes no optimizadas de Next evitan errores en Cloudflare Pages estático
   images: { unoptimized: true },
 };
