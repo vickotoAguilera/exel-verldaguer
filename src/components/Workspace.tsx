@@ -19,6 +19,10 @@ export function Workspace() {
     const [sortColumn, setSortColumn] = useState<string | null>(null);
     const [sortDir, setSortDir] = useState<SortDirection>(null);
 
+    // Layout state 
+    const [extraRows, setExtraRows] = useState<number>(0);
+    const [extraCols, setExtraCols] = useState<number>(0);
+
     // Column widths state (px). Initialised lazily per header.
     const [colWidths, setColWidths] = useState<Record<string, number>>({});
     const resizingRef = useRef<{ col: string; startX: number; startW: number } | null>(null);
@@ -29,6 +33,7 @@ export function Workspace() {
     const onResizeStart = useCallback((e: React.MouseEvent, header: string) => {
         e.preventDefault();
         e.stopPropagation(); // don't trigger sort
+
         const startX = e.clientX;
         const startW = getColWidth(header);
         resizingRef.current = { col: header, startX, startW };
@@ -132,8 +137,24 @@ export function Workspace() {
                 <LiquidSlideButton variant="warning" onClick={() => setActiveMode('cambio_sala')} disabled={activeMode !== null}>Cambio de Sala</LiquidSlideButton>
                 <LiquidSlideButton variant="success" onClick={() => setActiveMode('nueva_lista')} disabled={activeMode !== null}>Nueva Lista</LiquidSlideButton>
                 <div className="flex-1" />
-                <LiquidSlideButton variant="outline" onClick={() => exportSeparated(items, originalHeaders)}>Exportar Separados</LiquidSlideButton>
-                <LiquidSlideButton variant="primary" onClick={() => exportUnified(items, originalHeaders)}>Exportar Unificado</LiquidSlideButton>
+
+                {/* Padding controls */}
+                <div className="flex items-center gap-3 bg-white/5 px-4 rounded-full border border-white/10 hidden lg:flex" title="Cajas en blanco extra (Bordes vacíos) al exportar">
+                    <span className="text-zinc-400 text-sm whitespace-nowrap">Añadir vacías:</span>
+                    <div className="flex items-center gap-2">
+                        <span className="text-zinc-500 text-xs">Cols</span>
+                        <input type="number" min="0" max="50" value={extraCols} onChange={e => setExtraCols(Number(e.target.value) || 0)}
+                            className="w-14 bg-black/50 border border-white/10 rounded px-2 py-1 text-white text-sm" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-zinc-500 text-xs">Filas</span>
+                        <input type="number" min="0" max="500" value={extraRows} onChange={e => setExtraRows(Number(e.target.value) || 0)}
+                            className="w-16 bg-black/50 border border-white/10 rounded px-2 py-1 text-white text-sm" />
+                    </div>
+                </div>
+
+                <LiquidSlideButton variant="outline" onClick={() => exportSeparated(items, originalHeaders, extraCols, extraRows)}>Exportar Separados</LiquidSlideButton>
+                <LiquidSlideButton variant="primary" onClick={() => exportUnified(items, originalHeaders, extraCols, extraRows)}>Exportar Unificado</LiquidSlideButton>
             </div>
 
             {/* Mode banner */}
@@ -171,11 +192,11 @@ export function Workspace() {
                             {originalHeaders.map((h, i) => (
                                 <th
                                     key={i}
-                                    className="relative px-3 py-3 font-medium select-none border-r border-white/10 group"
+                                    className="relative px-3 py-3 font-medium select-none border-r border-white/10 group bg-[#1a1a24]"
                                     style={{ width: getColWidth(h), minWidth: 60 }}
                                 >
                                     <div className="flex items-center cursor-pointer hover:text-indigo-300 transition-colors" onClick={() => handleSort(h)}>
-                                        <span className="truncate">{h}</span>
+                                        <span className="truncate flex-1">{h}</span>
                                         <SortIcon header={h} />
                                     </div>
                                     {/* Resize handle */}
